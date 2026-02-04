@@ -56,6 +56,7 @@ def main():
 
         resize_prefix_esc = b'\x1b]RESIZE'
         resize_prefix_noesc = b']RESIZE'
+        da_prefix = b'\x1b[?'
         pending = b''
 
         read_stdin = getattr(sys.stdin.buffer, "read1", sys.stdin.buffer.read)
@@ -82,6 +83,13 @@ def main():
                         pending = pending[bel_index + 1:]
                         continue
 
+                    if pending.startswith(da_prefix):
+                        c_index = pending.find(b'c', len(da_prefix))
+                        if c_index == -1:
+                            break
+                        pending = pending[c_index + 1:]
+                        continue
+
                     if pending.startswith(resize_prefix_noesc):
                         bel_index = pending.find(b'\x07', len(resize_prefix_noesc))
                         if bel_index == -1:
@@ -98,6 +106,8 @@ def main():
                         continue
 
                     if pending.startswith(b'\x1b]') and len(pending) < len(resize_prefix_esc):
+                        break
+                    if pending.startswith(da_prefix) and len(pending) < len(da_prefix):
                         break
                     if pending.startswith(b']') and len(pending) < len(resize_prefix_noesc):
                         break
