@@ -56,6 +56,9 @@ def main():
 
         resize_prefix_esc = b'\x1b]RESIZE'
         resize_prefix_noesc = b']RESIZE'
+        osc_prefix = b'\x1b]'
+        csi_prefix = b'\x1b['
+        ss3_prefix = b'\x1bO'
         da_prefix = b'\x1b[?'
         pending = b''
 
@@ -105,7 +108,36 @@ def main():
                         pending = pending[bel_index + 1:]
                         continue
 
-                    if pending.startswith(b'\x1b]') and len(pending) < len(resize_prefix_esc):
+                    if pending.startswith(osc_prefix):
+                        bel_index = pending.find(b'\x07', len(osc_prefix))
+                        if bel_index == -1:
+                            break
+                        pending = pending[bel_index + 1:]
+                        continue
+
+                    if pending.startswith(csi_prefix):
+                        end_index = -1
+                        for i in range(2, len(pending)):
+                            b = pending[i]
+                            if 0x40 <= b <= 0x7E:
+                                end_index = i
+                                break
+                        if end_index == -1:
+                            break
+                        seq = pending[:end_index + 1]
+                        pty.write(seq.decode('utf-8', errors='replace'))
+                        pending = pending[end_index + 1:]
+                        continue
+
+                    if pending.startswith(ss3_prefix):
+                        if len(pending) < 3:
+                            break
+                        seq = pending[:3]
+                        pty.write(seq.decode('utf-8', errors='replace'))
+                        pending = pending[3:]
+                        continue
+
+                    if pending.startswith(osc_prefix) and len(pending) < len(resize_prefix_esc):
                         break
                     if pending.startswith(da_prefix) and len(pending) < len(da_prefix):
                         break
