@@ -58,9 +58,10 @@ def main():
         resize_prefix_noesc = b']RESIZE'
         pending = b''
 
+        read_stdin = getattr(sys.stdin.buffer, "read1", sys.stdin.buffer.read)
         while running and pty.isalive():
             try:
-                chunk = sys.stdin.buffer.read(1024)
+                chunk = read_stdin(1024)
                 if not chunk:
                     break
                 pending += chunk
