@@ -62,6 +62,17 @@ def main():
         da_prefix = b'\x1b[?'
         pending = b''
 
+        def utf8_seq_len(first_byte):
+            if first_byte < 0x80:
+                return 1
+            if 0xC2 <= first_byte <= 0xDF:
+                return 2
+            if 0xE0 <= first_byte <= 0xEF:
+                return 3
+            if 0xF0 <= first_byte <= 0xF4:
+                return 4
+            return 1
+
         read_stdin = getattr(sys.stdin.buffer, "read1", sys.stdin.buffer.read)
         while running and pty.isalive():
             try:
@@ -144,8 +155,13 @@ def main():
                     if pending.startswith(b']') and len(pending) < len(resize_prefix_noesc):
                         break
 
-                    pty.write(pending[:1].decode('utf-8', errors='replace'))
-                    pending = pending[1:]
+                    first = pending[0]
+                    seq_len = utf8_seq_len(first)
+                    if len(pending) < seq_len:
+                        break
+                    seq = pending[:seq_len]
+                    pty.write(seq.decode('utf-8', errors='replace'))
+                    pending = pending[seq_len:]
             except Exception:
                 break
 
