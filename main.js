@@ -7023,6 +7023,8 @@ var TerminalView = class extends import_obsidian.ItemView {
     container.addClass("vault-terminal");
     if (process.platform === "win32") {
       container.addClass("vault-terminal-windows");
+    } else if (process.platform === "darwin" || process.platform === "linux") {
+      container.addClass("vault-terminal-ime");
     }
     this.termHost = container.createDiv({ cls: "vault-terminal-host" });
   }

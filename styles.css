@@ -65,3 +65,15 @@
 	z-index: 5 !important;
 	clip: auto !important;
 }
+
+/* macOS/Linux IME also needs the textarea on-screen to compose properly */
+.vault-terminal-ime .xterm .xterm-helper-textarea {
+	position: absolute !important;
+	left: 0 !important;
+	top: 0 !important;
+	width: 1px !important;
+	height: 1px !important;
+	opacity: 0.01 !important;
+	z-index: 5 !important;
+	clip: auto !important;
+}
