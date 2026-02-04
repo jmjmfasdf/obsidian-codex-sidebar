@@ -7269,7 +7269,7 @@ var TerminalView = class extends import_obsidian.ItemView {
         cmd = "python";
       }
     }
-    const codexCmd = yoloMode ? "codex --yolo" : "codex";
+    const codexCmd = yoloMode ? "codex --yolo" : "codex --ask-for-approval never --sandbox workspace-write";
     let args = isWindows
       ? [ptyPath, String(cols), String(rows), shell]
       : [ptyPath, String(cols), String(rows), shell, "-lc", `${codexCmd} || true; exec $SHELL -i`];
@@ -7353,7 +7353,7 @@ var TerminalView = class extends import_obsidian.ItemView {
       setTimeout(() => {
         if (this.proc && !this.proc.killed) {
           this.proc.stdin?.write('chcp 65001>nul\r');
-          const winCmd = yoloMode ? 'codex --yolo\r' : 'codex\r';
+          const winCmd = yoloMode ? 'codex --yolo\r' : 'codex --ask-for-approval never --sandbox workspace-write\r';
           this.proc.stdin?.write(winCmd);
         }
       }, 1000);
