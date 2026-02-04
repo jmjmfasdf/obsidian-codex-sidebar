@@ -7021,6 +7021,9 @@ var TerminalView = class extends import_obsidian.ItemView {
     const container = this.containerEl;
     container.empty();
     container.addClass("vault-terminal");
+    if (process.platform === "win32") {
+      container.addClass("vault-terminal-windows");
+    }
     this.termHost = container.createDiv({ cls: "vault-terminal-host" });
   }
   getThemeColors() {
