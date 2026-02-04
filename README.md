@@ -1,83 +1,81 @@
-# Claude Sidebar
+# Codex Sidebar
 
-Run Claude Code in your Obsidian sidebar.
+Run OpenAI Codex CLI in your Obsidian sidebar.
 
-Built by [Derek Larson](https://dtlarson.com). [Pair with commands ‚Üí](https://delegatewithclaude.com/commands)
+Based on Claude Sidebar by Derek Larson.
 
-![Claude Sidebar](screenshot-obsidian.png)
+![Codex Sidebar](screenshot-obsidian.png)
 
 ## Features
 
 - **Embedded terminal** - Full terminal in your Obsidian sidebar
-- **Auto-launches Claude** - Claude Code starts automatically
-- **Multiple tabs** - Run multiple Claude instances side by side
-- **Folder context menu** - Right-click any folder to open Claude in that directory
-- **YOLO mode** - Launch Claude with `--dangerously-skip-permissions` via right-click menus
+- **Auto-launches Codex** - Codex CLI starts automatically
+- **Multiple tabs** - Run multiple Codex instances side by side
+- **Folder context menu** - Right-click any folder to open Codex in that directory
+- **YOLO mode** - Launch Codex with `--yolo` via right-click menus
 
 ## Requirements
 
-- macOS, Linux, or Windows
+- macOS, Linux, or Windows (Windows is experimental)
 - Python 3
-- [Claude Code](https://claude.com/claude-code)
+- [Codex CLI](https://developers.openai.com/codex/cli)
 
 ## Installation
 
-### Quick Install (Mac/Linux)
+### Quick Install (macOS/Linux)
 
 In your vault folder, run:
 ```bash
-curl -sL https://github.com/derek-larson14/obsidian-claude-sidebar/archive/refs/heads/main.tar.gz | tar -xz -C .obsidian/plugins && mv .obsidian/plugins/obsidian-claude-sidebar-main .obsidian/plugins/claude-sidebar
+curl -sL https://github.com/jmjmfasdf/obsidian-codex-sidebar/archive/refs/heads/main.tar.gz | tar -xz -C .obsidian/plugins && mv .obsidian/plugins/obsidian-codex-sidebar-main .obsidian/plugins/codex-sidebar
 ```
 
-Then in Obsidian: Settings ‚Üí Community Plugins ‚Üí Refresh ‚Üí Enable "Claude Sidebar"
+Then in Obsidian: Settings °Ê Community Plugins °Ê Refresh °Ê Enable "Codex Sidebar"
 
 **Windows:** See [Windows Setup](#windows-setup-experimental) below.
 
 ### Manual Installation
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/derek-larson14/obsidian-claude-sidebar/releases)
-2. Create folder: `<your-vault>/.obsidian/plugins/claude-sidebar/`
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/jmjmfasdf/obsidian-codex-sidebar/releases)
+2. Create folder: `<your-vault>/.obsidian/plugins/codex-sidebar/`
 3. Copy the downloaded files into that folder
-4. Reload Obsidian and enable the plugin in Settings ‚Üí Community Plugins
+4. Reload Obsidian and enable the plugin in Settings °Ê Community Plugins
 
 ### From Community Plugins
 
-Once approved, you'll be able to search for "Claude Sidebar" in Community Plugins ‚Üí Browse.
+Once approved, you'll be able to search for "Codex Sidebar" in Community Plugins °Ê Browse.
 
 ## Updating
 
 In your vault folder, run:
 ```bash
-cd .obsidian/plugins/claude-sidebar
-curl -LO https://github.com/derek-larson14/obsidian-claude-sidebar/releases/latest/download/main.js
-curl -LO https://github.com/derek-larson14/obsidian-claude-sidebar/releases/latest/download/manifest.json
-curl -LO https://github.com/derek-larson14/obsidian-claude-sidebar/releases/latest/download/styles.css
+cd .obsidian/plugins/codex-sidebar
+curl -LO https://github.com/jmjmfasdf/obsidian-codex-sidebar/releases/latest/download/main.js
+curl -LO https://github.com/jmjmfasdf/obsidian-codex-sidebar/releases/latest/download/manifest.json
+curl -LO https://github.com/jmjmfasdf/obsidian-codex-sidebar/releases/latest/download/styles.css
 ```
 
 Then restart Obsidian or disable/re-enable the plugin.
 
 ## Usage
 
-https://github.com/user-attachments/assets/de98439a-8a1f-4a8a-9d02-44027d756462
-
-- Click the bot icon in the left ribbon to open Claude
-- Right-click the bot icon for YOLO mode (`--dangerously-skip-permissions`)
-- Right-click any folder for "Open Claude here" or "Open Claude here (YOLO)"
+- Click the bot icon in the left ribbon to open Codex
+- Right-click the bot icon for YOLO mode (`--yolo`)
+- Right-click any folder for "Open Codex here" or "Open Codex here (YOLO)"
 - Use Command Palette (`Cmd+P`) for:
-  - **Open Claude Code** - Open or focus Claude panel
-  - **New Claude Tab** - Open additional Claude instance
-  - **Close Claude Tab** - Close current Claude tab (when focused)
-  - **Toggle Focus: Editor ‚Üî Claude** - Quick switch between editor and Claude
+  - **Open Codex CLI** - Open or focus Codex panel
+  - **New Codex Tab** - Open additional Codex instance
+  - **Close Codex Tab** - Close current Codex tab (when focused)
+  - **Toggle Focus: Editor °Í Codex** - Quick switch between editor and Codex
 - Press `Shift+Enter` for multi-line input
-- Set your own hotkeys in Settings ‚Üí Hotkeys
+- Set your own hotkeys in Settings °Ê Hotkeys
 
 ## Platform Support
 
 | Platform | Status |
 |----------|--------|
-| macOS | ‚úÖ Supported |
-| Linux | ‚úÖ Supported |
-| Windows | ‚ö†Ô∏è Experimental |
+| macOS | ? Supported |
+| Linux | ? Supported |
+| Windows | ?? Experimental |
 
 ### Windows Setup (Experimental)
 
@@ -89,12 +87,17 @@ Windows requires additional dependencies:
 pip install pywinpty
 ```
 
-3. Install the plugin (run from your vault folder in PowerShell):
-```powershell
-$u="https://github.com/derek-larson14/obsidian-claude-sidebar/archive/main.zip"; Invoke-WebRequest $u -OutFile s.zip; Expand-Archive s.zip .obsidian\plugins -Force; Move-Item ".obsidian\plugins\obsidian-claude-sidebar-main" ".obsidian\plugins\claude-sidebar" -Force; Remove-Item s.zip
+3. Install Codex CLI:
+```bash
+npm i -g @openai/codex
 ```
 
-**Note:** Windows support is experimental. Performance may be slower than macOS/Linux due to ConPTY overhead.
+4. Install the plugin (run from your vault folder in PowerShell):
+```powershell
+$u="https://github.com/jmjmfasdf/obsidian-codex-sidebar/archive/main.zip"; Invoke-WebRequest $u -OutFile s.zip; Expand-Archive s.zip .obsidian\plugins -Force; Move-Item ".obsidian\plugins\obsidian-codex-sidebar-main" ".obsidian\plugins\codex-sidebar" -Force; Remove-Item s.zip
+```
+
+**Note:** Codex CLI on Windows is experimental. For the best experience, use Codex in a WSL workspace.
 
 ## How It Works
 
@@ -112,7 +115,7 @@ The PTY scripts (`terminal_pty.py` for Unix, `terminal_win.py` for Windows) are 
 
 ## Contributing
 
-Issues and PRs welcome at [github.com/derek-larson14/obsidian-claude-sidebar](https://github.com/derek-larson14/obsidian-claude-sidebar)
+Issues and PRs welcome at [github.com/jmjmfasdf/obsidian-codex-sidebar](https://github.com/jmjmfasdf/obsidian-codex-sidebar)
 
 ## License
 

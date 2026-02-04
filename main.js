@@ -6729,14 +6729,14 @@ var TerminalView = class extends import_obsidian.ItemView {
     this.hasOutput = false;
     // Custom working directory (set via folder context menu)
     this.workingDir = null;
-    // YOLO mode (--dangerously-skip-permissions)
+    // YOLO mode (--yolo)
     this.yoloMode = false;
   }
   getViewType() {
     return VIEW_TYPE;
   }
   getDisplayText() {
-    return "Claude";
+    return "Codex";
   }
   getIcon() {
     return "bot";
@@ -7045,7 +7045,7 @@ var TerminalView = class extends import_obsidian.ItemView {
   async saveImageToTemp(blob) {
     const os = require("os");
     const ext = blob.type.split("/")[1] || "png";
-    const filename = `claude_paste_${Date.now()}.${ext}`;
+    const filename = `codex_paste_${Date.now()}.${ext}`;
     const tempPath = path.join(os.tmpdir(), filename);
     const buffer = Buffer.from(await blob.arrayBuffer());
     fs.writeFileSync(tempPath, buffer);
@@ -7233,7 +7233,7 @@ var TerminalView = class extends import_obsidian.ItemView {
     // Decode and write PTY script to temp file
     const os = require("os");
     const scriptB64 = isWindows ? WIN_PTY_SCRIPT_B64 : PTY_SCRIPT_B64;
-    const scriptName = isWindows ? "claude_sidebar_win.py" : "claude_sidebar_pty.py";
+    const scriptName = isWindows ? "codex_sidebar_win.py" : "codex_sidebar_pty.py";
     const ptyPath = path.join(os.tmpdir(), scriptName);
     // Always write to ensure current version (overwrites stale cached copies)
     const ptyScript = Buffer.from(scriptB64, "base64").toString("utf-8");
@@ -7266,10 +7266,10 @@ var TerminalView = class extends import_obsidian.ItemView {
         cmd = "python";
       }
     }
-    const claudeCmd = yoloMode ? "claude --dangerously-skip-permissions" : "claude";
+    const codexCmd = yoloMode ? "codex --yolo" : "codex";
     let args = isWindows
       ? [ptyPath, String(cols), String(rows), shell]
-      : [ptyPath, String(cols), String(rows), shell, "-lc", `${claudeCmd} || true; exec $SHELL -i`];
+      : [ptyPath, String(cols), String(rows), shell, "-lc", `${codexCmd} || true; exec $SHELL -i`];
 
     // Get PATH from user's login shell (GUI apps don't inherit shell config)
     let shellEnv = { ...process.env, TERM: "xterm-256color" };
@@ -7287,7 +7287,7 @@ var TerminalView = class extends import_obsidian.ItemView {
       } catch (e) {
         // Fall back to process.env.PATH if shell init fails
       }
-      // Ensure ~/.local/bin is in PATH for Claude Code (official installer location)
+      // Ensure ~/.local/bin is in PATH for Codex CLI (common npm prefix)
       const homeDir = process.env.HOME || '';
       const localBin = `${homeDir}/.local/bin`;
       if (homeDir && shellEnv.PATH && !shellEnv.PATH.includes(localBin)) {
@@ -7349,7 +7349,7 @@ var TerminalView = class extends import_obsidian.ItemView {
     if (isWindows) {
       setTimeout(() => {
         if (this.proc && !this.proc.killed) {
-          const winCmd = yoloMode ? 'claude --dangerously-skip-permissions\r' : 'claude\r';
+          const winCmd = yoloMode ? 'codex --yolo\r' : 'codex\r';
           this.proc.stdin?.write(winCmd);
         }
       }, 1000);
@@ -7408,7 +7408,7 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
   }
   async onload() {
     this.registerView(VIEW_TYPE, (leaf) => new TerminalView(leaf, this));
-    const ribbonIcon = this.addRibbonIcon("bot", "New Claude Tab", () => {
+    const ribbonIcon = this.addRibbonIcon("bot", "New Codex Tab", () => {
       const now = Date.now();
       if (now - this.lastRibbonClick < 1500) return; // 1.5s throttle to prevent accidental double-clicks
       this.lastRibbonClick = now;
@@ -7431,18 +7431,18 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
       menu.showAtMouseEvent(e);
     });
     this.addCommand({
-      id: "open-claude",
-      name: "Open Claude Code",
+      id: "open-codex",
+      name: "Open Codex CLI",
       callback: () => this.activateView()
     });
     this.addCommand({
-      id: "new-claude-tab",
-      name: "New Claude Tab",
+      id: "new-codex-tab",
+      name: "New Codex Tab",
       callback: () => this.createNewTab()
     });
     this.addCommand({
-      id: "close-claude-tab",
-      name: "Close Claude Tab",
+      id: "close-codex-tab",
+      name: "Close Codex Tab",
       checkCallback: (checking) => {
         const view = this.app.workspace.getActiveViewOfType(TerminalView);
         if (view) {
@@ -7453,13 +7453,13 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
       }
     });
     this.addCommand({
-      id: "toggle-claude-focus",
-      name: "Toggle Focus: Editor ↔ Claude",
+      id: "toggle-codex-focus",
+      name: "Toggle Focus: Editor ↔ Codex",
       callback: () => this.toggleFocus()
     });
     this.addCommand({
-      id: "send-file-to-claude",
-      name: "Send File Path to Claude",
+      id: "send-file-to-codex",
+      name: "Send File Path to Codex",
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -7472,8 +7472,8 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
       }
     });
     this.addCommand({
-      id: "send-selection-to-claude",
-      name: "Send Selection to Claude",
+      id: "send-selection-to-codex",
+      name: "Send Selection to Codex",
       checkCallback: (checking) => {
         const editor = this.app.workspace.activeEditor?.editor;
         if (!editor) return false;
@@ -7495,7 +7495,7 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
         if (file instanceof import_obsidian.TFolder) {
           menu.addItem(item =>
             item
-              .setTitle('Open Claude here')
+              .setTitle('Open Codex here')
               .setIcon('bot')
               .onClick(() => {
                 const absolutePath = this.app.vault.adapter.getFullPath(file.path);
@@ -7504,7 +7504,7 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
           );
           menu.addItem(item =>
             item
-              .setTitle('Open Claude here (YOLO)')
+              .setTitle('Open Codex here (YOLO)')
               .setIcon('zap')
               .onClick(() => {
                 const absolutePath = this.app.vault.adapter.getFullPath(file.path);
@@ -7518,18 +7518,18 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
   async toggleFocus() {
     const activeView = this.app.workspace.getActiveViewOfType(TerminalView);
     if (activeView) {
-      // Currently in Claude, go to editor
+      // Currently in Codex, go to editor
       const leaves = this.app.workspace.getLeavesOfType("markdown");
       if (leaves.length > 0) {
         this.app.workspace.setActiveLeaf(leaves[0], { focus: true });
       }
     } else {
-      // Currently in editor, go to Claude
-      const claudeLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
-      if (claudeLeaves.length > 0) {
-        this.app.workspace.setActiveLeaf(claudeLeaves[0], { focus: true });
+      // Currently in editor, go to Codex
+      const codexLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
+      if (codexLeaves.length > 0) {
+        this.app.workspace.setActiveLeaf(codexLeaves[0], { focus: true });
         // Focus the terminal
-        const view = claudeLeaves[0].view;
+        const view = codexLeaves[0].view;
         if (view instanceof TerminalView && view.term) {
           view.term.focus();
         }
@@ -7600,7 +7600,7 @@ var VaultTerminalPlugin = class extends import_obsidian.Plugin {
         await new Promise(r => setTimeout(r, 50));
         attempts++;
       }
-      // Additional delay for Claude to fully initialize after first output
+      // Additional delay for Codex to fully initialize after first output
       await new Promise(r => setTimeout(r, 1000));
     }
 
