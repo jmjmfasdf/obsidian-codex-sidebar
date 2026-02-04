@@ -54,34 +54,55 @@ def main():
         output_thread = threading.Thread(target=read_output, daemon=True)
         output_thread.start()
 
+        resize_prefix_esc = b'\x1b]RESIZE'
+        resize_prefix_noesc = b']RESIZE'
+        pending = b''
+
         while running and pty.isalive():
             try:
-                data = sys.stdin.buffer.read(1)
-                if not data:
+                chunk = sys.stdin.buffer.read(1024)
+                if not chunk:
                     break
-                # Check for resize escape sequence
-                if data == b'\x1b':
-                    peek = sys.stdin.buffer.read(7)
-                    if peek == b']RESIZE':
-                        # Read until \x07
-                        resize_data = b''
-                        while True:
-                            c = sys.stdin.buffer.read(1)
-                            if c == b'\x07':
-                                break
-                            resize_data += c
-                        # Parse ;cols;rows
-                        parts = resize_data.decode().strip(';').split(';')
+                pending += chunk
+
+                while pending:
+                    if pending.startswith(resize_prefix_esc):
+                        bel_index = pending.find(b'\x07', len(resize_prefix_esc))
+                        if bel_index == -1:
+                            break
+                        resize_data = pending[len(resize_prefix_esc):bel_index]
+                        parts = resize_data.decode(errors='ignore').strip(';').split(';')
                         if len(parts) == 2:
                             try:
                                 new_cols, new_rows = int(parts[0]), int(parts[1])
                                 pty.set_size(new_cols, new_rows)
                             except ValueError:
                                 pass
-                    else:
-                        pty.write((data + peek).decode('utf-8', errors='replace'))
-                else:
-                    pty.write(data.decode('utf-8', errors='replace'))
+                        pending = pending[bel_index + 1:]
+                        continue
+
+                    if pending.startswith(resize_prefix_noesc):
+                        bel_index = pending.find(b'\x07', len(resize_prefix_noesc))
+                        if bel_index == -1:
+                            break
+                        resize_data = pending[len(resize_prefix_noesc):bel_index]
+                        parts = resize_data.decode(errors='ignore').strip(';').split(';')
+                        if len(parts) == 2:
+                            try:
+                                new_cols, new_rows = int(parts[0]), int(parts[1])
+                                pty.set_size(new_cols, new_rows)
+                            except ValueError:
+                                pass
+                        pending = pending[bel_index + 1:]
+                        continue
+
+                    if pending.startswith(b'\x1b]') and len(pending) < len(resize_prefix_esc):
+                        break
+                    if pending.startswith(b']') and len(pending) < len(resize_prefix_noesc):
+                        break
+
+                    pty.write(pending[:1].decode('utf-8', errors='replace'))
+                    pending = pending[1:]
             except Exception:
                 break
 
